@@ -1,0 +1,34 @@
+
+en:
+  welcome: "Welcome to Calculator"
+  get_name: "What's your name?"
+  invalid_name: "Sorry, I didn't catch that..."
+  greeting: "Hi, "
+  get_first_number: "What's the first number?"
+  get_second_number: "What's the second number?"
+  invalid_number: "Hmm...that's not a valid number."
+  get_operator: |
+      What operation do you want to perform on these two numbers? 
+          Enter 1 for Addition
+          Enter 2 for Subtraction
+          Enter 3 for Multiplication
+          Enter 4 for Division"
+  invalid_operator: "Hmm...that's not a valid operator. Must choose 1, 2, 3, or 4"
+  repeat: "Do you want to perform another calculation? Y/N"
+
+fr:
+    welcome: "Bienvenue à Calculatrice"
+    get_name: "Comment t'appelles-tu?"
+    invalid_name: "Desolée, je ne l'ai pas entendu..."
+    greeting: "Salut, "
+    get_first_number: "Quel est le premier numèro?"
+    get_second_number: "Quel est la deuxieme numèro?"
+    invalid_number: "Hmmm...ce n'est pas un numèro valide."
+    get_operator: |
+        Quel operation est-ce que tu veux exécuter?
+            Soumets 1 pour Addition
+            Soumets 2 pour Subtraction
+            Soumets 3 pour Multiplication
+            Soumets 4 pour Division
+    invalid_operator: "Hmmm...ce n'est pas un operateur valide. Tu dois choisir 1, 2, 3, ou 4"
+    repeat: "Est-ce que tu veux exécuter un autre calcul?"
