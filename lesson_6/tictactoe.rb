@@ -19,6 +19,12 @@ INITIAL_MARKER = " "
 PLAYER_MARKER = "X"
 COMPUTER_MARKER = "O"
 
+WINNING_LINES = [
+    [:a1, :a2, :a3], [:b1, :b2, :b3], [:c1, :c2, :c3],
+    [:a1, :b1, :c1], [:a2, :b2, :c2], [:a3, :b3, :c3],
+    [:a1, :b2, :c3], [:a3, :b2, :c1]
+  ]
+
 def prompt(message)
   puts "==> #{message}"
 end
@@ -68,9 +74,82 @@ def player_move!(brd)
   brd[coordinate] = PLAYER_MARKER
 end
 
+
 def computer_move!(brd)
-  coordinate = empty_squares(brd).sample.to_sym
-  brd[coordinate] = COMPUTER_MARKER
+  if !opportunity?(brd).empty?
+    opportunity = opportunity?(brd)
+    brd[offense_play(opportunity, brd)] = COMPUTER_MARKER
+  elsif !threat?(brd).empty? && opportunity?(brd).empty?
+    threat = threat?(brd)
+    brd[threat_response(threat, brd)] = COMPUTER_MARKER
+  elsif brd[:b2] == INITIAL_MARKER
+    brd[:b2] = COMPUTER_MARKER
+  else
+    coordinate = empty_squares(brd).sample.to_sym
+    brd[coordinate] = COMPUTER_MARKER
+  end
+end
+
+
+def place_piece!(brd, current_player)
+  if current_player == "computer"
+    computer_move!(brd)
+  elsif current_player == "player"
+    player_move!(brd)
+  end
+  display_board(brd)
+end
+
+def alternate_player(current_player) ###
+  if current_player == "computer"
+    return "player"
+  elsif current_player == "player"
+    return "computer"
+  end
+end
+
+def opportunity?(brd)
+  opportunity = WINNING_LINES.select do |line|
+    computer_mark = 0
+    player_mark = 0
+    line.each do |coord|
+      computer_mark += 1 if brd[coord] == COMPUTER_MARKER
+      player_mark += 1 if brd[coord] == PLAYER_MARKER
+    end
+    computer_mark == 2 && player_mark == 0
+  end
+  opportunity.flatten
+end
+
+def offense_play(opportunity, brd)
+  if opportunity.empty?
+    nil
+  else 
+    offense = opportunity.select {|coord| brd[coord] == INITIAL_MARKER}
+    offense[0]
+  end
+end
+
+def threat?(brd)
+  threat = WINNING_LINES.select do |line|
+    player_mark = 0
+    computer_mark = 0
+    line.each do |coord|
+      player_mark += 1 if brd[coord] == PLAYER_MARKER
+      computer_mark += 1 if brd[coord] == COMPUTER_MARKER
+    end
+    player_mark == 2 && computer_mark == 0
+  end
+  threat.flatten
+end
+
+def threat_response(threat, brd) #####
+  if threat.empty?
+    nil
+  else
+    response = threat.select {|coord| brd[coord] == INITIAL_MARKER}
+    response[0]
+  end
 end
 
 def board_full?(brd)
@@ -82,13 +161,7 @@ def winner?(brd)
 end
 
 def detect_winner(brd)
-  winning_lines = [
-    [:a1, :a2, :a3], [:b1, :b2, :b3], [:c1, :c2, :c3],
-    [:a1, :b1, :c1], [:a2, :b2, :c2], [:a3, :b3, :c3],
-    [:a1, :b2, :c3], [:a3, :b2, :c1]
-  ]
-
-  winning_lines.each do |line|
+  WINNING_LINES.each do |line|
     if brd[line[0]] == PLAYER_MARKER &&
        brd[line[1]] == PLAYER_MARKER &&
        brd[line[2]] == PLAYER_MARKER
@@ -102,27 +175,63 @@ def detect_winner(brd)
   nil
 end
 
+def whos_winning?(computer_score, player_score)
+  if computer_score == player_score
+    return "Computer: #{computer_score}. You: #{player_score}. You and Computer are currently tied."
+  elsif computer_score > player_score
+    return "Computer: #{computer_score}. You: #{player_score}. Computer is currently winning."
+  elsif computer_score < player_score
+    return "You: #{player_score}. Computer: #{computer_score}. You are currently winning."
+  end
+end
+
+computer_score = 0
+player_score = 0
+
 loop do
+  
   board = initialize_board
   display_board(board)
   prompt("Welcome to Tic-Tac-Toe!")
   sleep(0.8)
+  prompt("First to 5 wins!")
+  sleep(0.8)
+  prompt("#{whos_winning?(computer_score, player_score)}")
+  sleep(0.8)
   prompt("You are '#{PLAYER_MARKER}', Computer is '#{COMPUTER_MARKER}'")
   sleep(0.8)
 
+  current_player = nil
+
   loop do
-    player_move!(board)
-    break display_board(board) if winner?(board) || board_full?(board)
-    computer_move!(board)
-    break display_board(board) if winner?(board) || board_full?(board)
-    display_board(board)
+    prompt("Who should go first? Enter 'me' or 'computer'")
+    player = gets.chomp.downcase
+    if player == "me"
+      current_player = "player"
+    elsif player == "computer"
+      current_player = "computer"
+    end
+    break if current_player == "player"
+    break if current_player == "computer"
+    prompt("Hmmm...can you repeat that?")
   end
 
+  loop do
+    place_piece!(board, current_player)
+    current_player = alternate_player(current_player)
+    break display_board(board) if board_full?(board) || winner?(board)
+  end
+  
   if winner?(board)
     prompt("#{detect_winner(board)} won!")
+    computer_score += 1 if detect_winner(board) == "Computer"
+    player_score += 1 if detect_winner(board) == "You"
   else
     prompt("It's a tie!")
   end
+
+  break prompt("Computer has 5 points, Computer wins!") if computer_score == 5
+  break prompt("You have 5 points, you win!") if player_score == 5
 
   prompt("Do you want to play again? Enter Yes or No (or Y / N)")
   answer = gets.chomp
@@ -130,3 +239,4 @@ loop do
 end
 
 prompt("Thanks for playing Tic-Tac-Toe, Ho!")
+prompt("The final scores were: Computer: #{computer_score}. You: #{player_score}")
